@@ -22,6 +22,10 @@ def recommend():
     
     if query:
         recommended_papers = recommend_papers(query, df, tfidf_matrix)
+        
+        if len(recommended_papers) == 0:
+            return jsonify({"message": "Sorry, we couldn't find any results."}), 200
+        
         return jsonify(recommended_papers)
     return jsonify({"error": "No query provided"}), 400
 
@@ -35,6 +39,10 @@ def recommend_papers(query, df, tfidf_matrix):
     # Get indices of the top 5 most similar papers
     top_indices = similarities.argsort()[-5:][::-1]
     
+    # If all similarity scores are zero, return empty results
+    if all(similarity == 0 for similarity in similarities):
+        return []
+
     # Return the recommended papers as a list of titles and abstracts
     recommended = [
         {"title": df.iloc[i]["Title"], "abstract": df.iloc[i]["Abstract"], "similarity": similarities[i]}

@@ -59,6 +59,11 @@
             background-color: #0056b3;
             border-color: #004085;
         }
+        .no-results {
+            font-size: 1.2rem;
+            color: #ff0000;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -68,9 +73,9 @@
 
         <!-- Search Bar Section -->
         <div class="search-container">
-            <form action="/recommend" method="get">
+            <form id="search-form">
                 <div class="input-group">
-                    <input type="text" name="query" class="form-control" placeholder="Enter your query" required>
+                    <input type="text" id="query" class="form-control" placeholder="Enter your query" required>
                     <button type="submit" class="btn btn-primary">Get Recommendations</button>
                 </div>
             </form>
@@ -86,19 +91,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const form = document.querySelector("form");
+        const form = document.getElementById("search-form");
+        const queryInput = document.getElementById("query");
         const resultsDiv = document.getElementById("results");
 
         form.onsubmit = async (e) => {
             e.preventDefault();
-            const query = form.query.value;
+            const query = queryInput.value;
 
             const response = await fetch(`/recommend?query=${encodeURIComponent(query)}`);
             const data = await response.json();
 
             resultsDiv.innerHTML = "";
-            if (data.error) {
-                resultsDiv.innerHTML = `<p class="alert alert-danger">${data.error}</p>`;
+            if (data.message) {
+                resultsDiv.innerHTML = `<p class="no-results">${data.message}</p>`;  // Show message if no results
+            } else if (data.error) {
+                resultsDiv.innerHTML = `<p class="alert alert-danger">${data.error}</p>`;  // Show error message
             } else {
                 data.forEach((paper) => {
                     const paperDiv = document.createElement("div");
