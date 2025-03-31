@@ -5,8 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
-# Assuming you have a DataFrame `df` loaded with your data
-df = pd.read_csv('research_papers.csv')  # Load your data here
+# Load your research paper data
+df = pd.read_csv('research_papers.csv')  # Ensure this CSV is correct
 
 # Vectorize the abstracts using TfidfVectorizer
 vectorizer = TfidfVectorizer(stop_words='english')
@@ -23,7 +23,8 @@ def recommend():
     if query:
         recommended_papers = recommend_papers(query, df, tfidf_matrix)
         
-        if len(recommended_papers) == 0:
+        # Check if recommendation is empty or None
+        if not recommended_papers:  # This checks for both None and empty list
             return jsonify({"message": "Sorry, we couldn't find any results."}), 200
         
         return jsonify(recommended_papers)
@@ -43,11 +44,16 @@ def recommend_papers(query, df, tfidf_matrix):
     if all(similarity == 0 for similarity in similarities):
         return []
 
-    # Return the recommended papers as a list of titles and abstracts
+    # Return the recommended papers as a list of titles, abstracts, and similarity scores
     recommended = [
         {"title": df.iloc[i]["Title"], "abstract": df.iloc[i]["Abstract"], "similarity": similarities[i]}
         for i in top_indices
     ]
+    
+    # Check if the recommendations list is empty or None
+    if not recommended:
+        return []
+    
     return recommended
 
 if __name__ == '__main__':
